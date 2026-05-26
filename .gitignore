@@ -1,0 +1,34 @@
+node_modules/
+playwright-automation-framework/node_modules/
+playwright-automation-framework/reports/html/
+playwright-automation-framework/reports/test-results/
+playwright-automation-framework/reports/results.json
+playwright-automation-framework/reports/results.xml
+playwright-automation-framework/.env
+
+# Legacy paths
+playwright-report/
+test-results/
+
+# Knowledge base vector store
+knowledge_base/vector/chroma_db/
+
+# Secrets — use .mcp.json.example; keep local credentials untracked
+.mcp.json
+
+# Per-app inputs and generated harness artifacts (framework core stays in git)
+inputs/manual-flows/*
+!inputs/manual-flows/example-flow.template.md
+playwright-automation-framework/support/screen-maps/*.json
+playwright-automation-framework/pages/*.page.ts
+!playwright-automation-framework/pages/base.page.ts
+playwright-automation-framework/flows/
+playwright-automation-framework/fixtures/data/
+playwright-automation-framework/tests/e2e/*.spec.ts
+!playwright-automation-framework/tests/e2e/harness-placeholder.spec.ts
+playwright-automation-framework/reports/generation-manifest.json
+
+# Auth state — never commit session tokens
+*-auth.json
+*.auth.json
+.playwright-cli/

@@ -1,0 +1,2 @@
+-r kb_server/requirements.txt
+-r knowledge_base/requirements.txt

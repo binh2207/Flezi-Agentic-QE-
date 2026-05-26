@@ -1,0 +1,21 @@
+{
+  "name": "aiqe-playwright-harness-engineering",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Application-agnostic AI harness engineering core for Playwright automation",
+  "scripts": {
+    "test": "npm run test --prefix playwright-automation-framework",
+    "test:headed": "npm run test:headed --prefix playwright-automation-framework",
+    "test:smoke": "npm run test:smoke --prefix playwright-automation-framework",
+    "test:regression": "npm run test:regression --prefix playwright-automation-framework",
+    "test:debug": "npm run test:debug --prefix playwright-automation-framework",
+    "report": "npm run report --prefix playwright-automation-framework",
+    "kb:serve": "python kb_server/web_app.py",
+    "setup": "bash scripts/setup.sh",
+    "setup:playwright": "bash scripts/setup-playwright.sh && bash scripts/setup-mcp.sh",
+    "setup:mcp": "bash scripts/setup-mcp.sh",
+    "verify:mcp": "bash scripts/verify-mcp-playwright.sh",
+    "setup:kb": "bash scripts/setup-kb.sh",
+    "typecheck": "npm run typecheck --prefix playwright-automation-framework"
+  }
+}
