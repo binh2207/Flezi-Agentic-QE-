@@ -36,7 +36,16 @@ Evidence-first execution for harness engineering. **Screen maps are the contract
 - After a modal, drawer, or panel opens
 - After a state change reveals new controls (post-login, post-search)
 
-Do not recapture if URL and visible structure are unchanged.
+### Differential capture (skip if unchanged)
+
+Before running the capture script, check if a screen map already exists for this route:
+
+1. If `support/screen-maps/<feature>.screen.json` exists, read its `dom_fingerprint` and `route`.
+2. Run the capture script and compare the returned `dom_fingerprint` with the stored value.
+3. If fingerprints match **and** the route matches: reuse the existing map — do **not** overwrite.
+4. Only write a new map when fingerprints differ or no map exists.
+
+This avoids re-embedding the same DOM data multiple times in a session.
 
 ### MCP capture script
 

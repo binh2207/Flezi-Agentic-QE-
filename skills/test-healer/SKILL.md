@@ -14,11 +14,20 @@ Fix **automation scaffolding**, not product behavior.
 - Directory: `playwright-automation-framework/`
 - Evidence: stderr, HTML report, `reports/test-results/`, trace zip, screen maps
 
+## Minimal context protocol (read in order, stop when enough)
+
+Load only what the current attempt needs — do not read the full report or full screen map upfront:
+
+1. **Read stderr / test title only** — classify the error type from the failure message alone.
+2. **If selector error:** read only the `elements` array of the screen map for the failing intent. Do not load the full map if the intent key is already known.
+3. **If timeout/navigation error:** read only the last 20 lines of the HTML report stderr section. Do not load trace zip unless steps 1–2 are inconclusive after attempt 1.
+4. **Load trace zip only on attempt 3** if prior attempts did not resolve the failure.
+
 ## Loop (max 3 attempts per failure)
 
 1. Classify: timeout / strict mode / not found / navigation / env blocker
 2. Apply **one** change set:
-   - Update selector from fresh screen map `intent`
+   - Update selector from screen map `intent` (read only that element entry)
    - Add `waitFor({ state: 'visible' })` or section gate
    - Narrow locator scope (container)
 3. Re-run narrowly:

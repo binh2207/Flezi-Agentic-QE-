@@ -56,7 +56,15 @@ playwright-automation-framework/
 
 ## Templates
 
-Read and follow **[playwright-automation-framework/TEMPLATES.md](../../playwright-automation-framework/TEMPLATES.md)** for page, flow, spec, selectors, and manifest patterns.
+Read **only the section you need** from [playwright-automation-framework/TEMPLATES.md](../../playwright-automation-framework/TEMPLATES.md) — do not load the entire file upfront:
+
+| Artifact to generate | Section to read |
+|---|---|
+| `pages/<feature>.page.ts` | `## pages/<feature>.page.ts` |
+| `flows/<feature>.flow.ts` | `## flows/<feature>.flow.ts` |
+| `tests/e2e/<feature>.spec.ts` | `## tests/e2e/<feature>.spec.ts` |
+| `support/selectors.ts` | `## support/selectors.ts` |
+| `reports/generation-manifest.json` | `## reports/generation-manifest.json` |
 
 Existing scaffold: `pages/base.page.ts`, `support/helpers.ts`.
 

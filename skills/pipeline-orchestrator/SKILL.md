@@ -62,18 +62,18 @@ inputs (manual flow / test cases)
 
 ## Step 1 — Live execution
 
-**Read** `skills/live-execution/SKILL.md` fully.
+> Read `skills/live-execution/SKILL.md` now — only this file, no others yet.
 
 - Navigate with MCP Playwright (project `playwright` via `npm run setup:mcp`, or `plugin-playwright-playwright` / `cursor-ide-browser`)
 - Capture screen maps **before** interacting on each unique route/modal
 - Write maps to `playwright-automation-framework/support/screen-maps/<feature>.screen.json`
 - Produce an execution report under `playwright-automation-framework/reports/`
 
-**Gate:** Do not proceed to generation without at least one screen map for the primary route.
+**Gate:** Do not proceed to Step 2 without at least one screen map for the primary route.
 
 ## Step 2 — Automation generation
 
-**Read** `skills/automation-framework/SKILL.md` fully.
+> Read `skills/automation-framework/SKILL.md` now — only this file.
 
 - Use screen map `elements[].selector` only — never invent selectors
 - Output under `playwright-automation-framework/` only
@@ -91,19 +91,19 @@ npx playwright test tests/e2e/<feature>.spec.ts
 
 `playwright.config.ts` loads `.env` from this directory. Until feature specs exist, `npm test` runs the smoke placeholder (skipped).
 
-Record pass/fail counts in the generation manifest.
+Record pass/fail counts in the generation manifest. If all tests pass, skip Step 4.
 
-## Step 4 — Self-healing (if needed)
+## Step 4 — Self-healing (only if Step 3 has failures)
 
-**Read** `skills/test-healer/SKILL.md`.
+> Read `skills/test-healer/SKILL.md` now — skip entirely if Step 3 passed.
 
 - Max 3 patch attempts per failure cluster
 - Prefer screen map updates over heuristic CSS
 - Never weaken product assertions without explicit user approval
 
-## Step 5 — JIRA (optional)
+## Step 5 — JIRA (only if ticket key provided)
 
-**Read** `skills/test-jira-reporter/SKILL.md` when the user provides a ticket key.
+> Read `skills/test-jira-reporter/SKILL.md` now — skip if no JIRA key was given.
 
 ## Final report
 

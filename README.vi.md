@@ -341,44 +341,126 @@ Agent sẽ post comment wiki-markup lên JIRA và transition status:
 
 ---
 
+## Tuỳ chọn: Knowledge Base (RAG)
+
+KB là lớp RAG cho **yêu cầu nghiệp vụ** — AI hiểu "cần test gì" thay vì tự đoán. Không dùng cho selector (selector luôn từ screen map).
+
+### Kiến trúc 3 lớp
+
+```
+docs, requirements, test-cases (.md files)
+        |
+        v
+[1] Vector store (ChromaDB)          -- ingest.py / query.py
+        |
+        v
+[2] KB Agent (agentic RAG)           -- retrieve -> grade -> answer
+        |                               knowledge_base/agent/
+        v
+[3] REST API (kb_server)             -- http://127.0.0.1:8765
+                                        dùng cho tích hợp CI hoặc chat UI
+```
+
+| Lớp | Dùng khi |
+|---|---|
+| **Vector store** (CLI) | Query nhanh từ terminal, dùng trong skills |
+| **KB Agent** | Cần câu trả lời có reasoning, grading độ tin cậy của chunk |
+| **REST API** | Tích hợp CI pipeline hoặc chat UI bên ngoài |
+
+### Cài đặt
+
+```bash
+npm run setup:kb
+export ANTHROPIC_API_KEY=your_key   # bắt buộc cho KB Agent và REST API
+```
+
+### Ingest tài liệu
+
+```bash
+# Ingest thư mục inputs/ (user stories, test cases, flow docs)
+python3 knowledge_base/vector/ingest.py inputs/
+
+# Ingest toàn bộ project (requirements + skills + flows)
+python3 knowledge_base/vector/ingest.py .
+
+# Append thêm tài liệu mà không xoá dữ liệu cũ
+python3 knowledge_base/vector/ingest.py inputs/ --no-reset
+```
+
+Nguồn tốt để ingest: user stories, Confluence export dạng `.md`, feature specs, BDD scenarios, API docs.
+
+### Retrieve (query)
+
+```bash
+# Query CLI — trả về top-5 chunk liên quan nhất
+python3 knowledge_base/vector/query.py "checkout payment validation rules" --n 5
+
+# Dùng KB Agent để trả lời có reasoning + citation
+python3 scripts/rag_answer.py "What are the acceptance criteria for checkout?"
+
+# REST API
+npm run kb:serve   # http://127.0.0.1:8765
+curl -X POST http://127.0.0.1:8765/kb/chat \
+  -H "Content-Type: application/json" \
+  -d '{"question": "payment validation rules"}'
+```
+
+Output query cho biết score cosine similarity — chunk có score > 0.5 là liên quan.
+
+### Giới hạn rõ ràng
+
+| Dùng KB | Không dùng KB |
+|---|---|
+| Requirements, acceptance criteria, BDD scenarios | CSS/XPath selector cho Playwright |
+| Domain rules, naming conventions từ docs | Discover live UI layout |
+| "App phải làm gì?" khi có tài liệu | Đoán behaviour không có trong docs |
+
+> Nếu KB không có câu trả lời, agent ghi `[KB gap — not documented]` thay vì tự bịa.
+
+---
+
 ## Tuỳ chọn: Design test case trước khi chạy harness
 
-Nếu chưa có flow rõ ràng, dùng **test-case-design** skill:
+**Test-case-design** tự động query KB trước khi thiết kế — đây là điểm leverage chính giữa KB và test design.
+
+### Luồng KB -> Test case -> Harness
+
+```
+KB (requirements, acceptance criteria)
+        |
+        | query tự động (Step 0)
+        v
+test-case-design     -- sinh test cases từ context KB + kỹ thuật QA
+        |
+        v
+inputs/test-cases/test_cases_<feature>.md
+        |
+        v
+pipeline-orchestrator  -- dùng file này thay cho manual-flows làm input
+```
+
+### Cách dùng
 
 ```
 Design test cases for the checkout feature using BVA and state transition techniques.
 Requirements: <mô tả feature hoặc link tài liệu>
 ```
 
-Output: `inputs/test-cases/test_cases_checkout.md` — dùng file này thay cho `manual-flows/` làm input cho harness.
+Agent tự làm:
+1. Query KB lấy context (acceptance criteria, domain rules, BDD scenarios)
+2. Phân tích requirements + KB context
+3. Áp dụng kỹ thuật QA phù hợp
+4. Xuất file `inputs/test-cases/test_cases_checkout.md`
 
-Các kỹ thuật được hỗ trợ: **BVA**, **Equivalence Partitioning**, **Decision Table**, **State Transition**, **Exploratory**.
+### Kỹ thuật được hỗ trợ
 
----
-
-## Tuỳ chọn: Knowledge Base (RAG)
-
-Dùng KB khi muốn AI hiểu **yêu cầu nghiệp vụ** (what to test), không phải để lấy selector (how to automate).
-
-```bash
-npm run setup:kb
-export ANTHROPIC_API_KEY=your_key
-
-# Ingest tài liệu
-python3 knowledge_base/vector/ingest.py inputs/
-
-# Query
-python3 knowledge_base/vector/query.py "payment validation rules" --n 5
-
-# Hoặc chạy REST API
-npm run kb:serve   # http://127.0.0.1:8765
-```
-
-| Dùng KB | Không dùng KB |
+| Kỹ thuật | Khi nào dùng |
 |---|---|
-| Requirements, acceptance criteria, domain rules | CSS/XPath selector cho Playwright |
-| Thiết kế test case trước automation | Discover live UI (dùng live-execution) |
-| "Điều gì nên xảy ra?" khi có tài liệu | Đoán behaviour không có trong docs |
+| **BVA** — Boundary Value Analysis | Input có giới hạn số, ngày, ký tự |
+| **EP** — Equivalence Partitioning | Nhóm input có hành vi giống nhau |
+| **Decision Table** | Business rules nhiều điều kiện kết hợp |
+| **State Transition** | Luồng có trạng thái (Draft → Submitted → Approved) |
+| **Exploratory** | Vùng rủi ro, timeout, network chậm |
 
 ---
 
@@ -447,6 +529,87 @@ npm run kb:serve                 # khởi động RAG API (http://127.0.0.1:8765
 3. **Không được xoá assertion** để force green test.
 4. **Flow và test case** thường được gitignore — lưu trong repo hoặc team repo riêng.
 5. Sau khi có spec thật, xoá `harness-placeholder.spec.ts`.
+
+---
+
+## Token optimization
+
+Harness được tối ưu để giảm lượng token tiêu thụ trong mỗi session AI — giúp chạy nhanh hơn, rẻ hơn, và ít bị cắt context hơn trên các trang phức tạp.
+
+### 1. DOM pruning — screen map chỉ giữ element cần thiết
+
+`playwright-automation-framework/support/capture-script.js`
+
+| Thay đổi | Chi tiết |
+|---|---|
+| **Visible-only** | Bỏ tất cả element bị ẩn (`display:none`, `visibility:hidden`, zero-size) |
+| **Input hidden loại bỏ** | `input[type="hidden"]` không bao giờ được capture |
+| **Element budget = 50** | Tối đa 50 element/screen map; ưu tiên `data-testid` → `aria-*` → `id` → css |
+| **Null fields bị bỏ** | `label`, `text`, `placeholder`, `type` chỉ xuất hiện khi có giá trị thực |
+| **Text truncate 40 chars** | Giảm từ 80 xuống 40 ký tự |
+| **`dom_fingerprint` inline** | Hash tính sẵn trong script, không cần bước post-processing |
+
+**Tác động thực tế:** Trang có 200 element DOM → còn ~30–50 element visible interactive → giảm 70–85% kích thước screen map.
+
+---
+
+### 2. Lazy skill loading — chỉ đọc SKILL.md của phase đang chạy
+
+`skills/pipeline-orchestrator/SKILL.md`
+
+Trước đây orchestrator đọc tất cả SKILL.md ngay từ đầu. Bây giờ mỗi SKILL.md chỉ được đọc khi bước đó bắt đầu:
+
+```
+Bước 1 bắt đầu  →  đọc live-execution/SKILL.md
+Bước 2 bắt đầu  →  đọc automation-framework/SKILL.md
+Bước 3 pass     →  SKIP bước 4 (không đọc test-healer/SKILL.md)
+Bước 5 không có JIRA key  →  SKIP (không đọc test-jira-reporter/SKILL.md)
+```
+
+**Tác động:** Pipeline happy-path (không fail, không JIRA) chỉ đọc 2 SKILL.md thay vì 4–5.
+
+---
+
+### 3. Differential capture — bỏ qua recapture nếu DOM không đổi
+
+`skills/live-execution/SKILL.md`
+
+Trước khi chạy capture script, AI so sánh `dom_fingerprint` hiện tại với map đã lưu:
+
+- Fingerprint khớp + route khớp → **dùng lại map cũ**, không ghi đè
+- Fingerprint khác hoặc chưa có map → capture và lưu mới
+
+**Tác động:** Tránh re-embed cùng một DOM nhiều lần trong session (thường xảy ra khi retry hoặc navigate quay lại trang cũ).
+
+---
+
+### 4. Compact error context — test-healer đọc tối thiểu trước
+
+`skills/test-healer/SKILL.md`
+
+| Attempt | Context được đọc |
+|---|---|
+| Attempt 1 | Chỉ stderr + test title → phân loại lỗi |
+| Attempt 2 | Thêm entry element trong screen map của intent bị lỗi |
+| Attempt 3 | Mới load trace zip nếu 2 lần trước chưa giải quyết được |
+
+**Tác động:** Tránh load full HTML report + trace zip (~vài MB) ngay từ lần đầu khi thường chỉ cần 2–3 dòng stderr.
+
+---
+
+### 5. Selective template reading — chỉ đọc section cần trong TEMPLATES.md
+
+`skills/automation-framework/SKILL.md`
+
+Thay vì đọc toàn bộ `TEMPLATES.md`, AI chỉ đọc section tương ứng với artifact đang sinh:
+
+| Đang tạo file | Chỉ đọc section |
+|---|---|
+| `pages/<feature>.page.ts` | `## pages/<feature>.page.ts` |
+| `tests/e2e/<feature>.spec.ts` | `## tests/e2e/<feature>.spec.ts` |
+| `reports/generation-manifest.json` | `## reports/generation-manifest.json` |
+
+**Tác động:** Không load boilerplate của các artifact khác khi chỉ cần regenerate một file.
 
 ---
 
