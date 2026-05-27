@@ -25,18 +25,14 @@ print_header() {
 ok()   { echo "  [OK]  $*"; }
 info() { echo "  -->   $*"; }
 
-# -- Core: Playwright + MCP + Harness SDK (shared) ----------------------------
+# -- Core: Playwright + MCP (shared) ------------------------------------------
 setup_core() {
   echo ""
-  echo "-- [1/3] Installing Playwright dependencies..."
+  echo "-- [1/2] Installing Playwright dependencies..."
   bash "$root/scripts/setup-playwright.sh"
   echo ""
-  echo "-- [2/3] Configuring MCP (playwright server)..."
+  echo "-- [2/2] Configuring MCP (playwright server)..."
   bash "$root/scripts/setup-mcp.sh"
-  echo ""
-  echo "-- [3/3] Installing Harness MCP server dependencies..."
-  npm install --prefix "$root" --silent
-  ok "Harness MCP server dependencies installed."
 }
 
 # -- Claude Code --------------------------------------------------------------
@@ -142,18 +138,11 @@ print("  [OK] Updated .vscode/settings.json.")
 PY
   fi
 
-  # .vscode/mcp.json provides aiqe-harness + playwright MCP for VS Code Copilot
-  if [[ -f "$vscode_dir/mcp.json" ]]; then
-    ok ".vscode/mcp.json already present (Harness MCP + Playwright MCP configured)."
-  else
-    ok ".vscode/mcp.json present."
-  fi
-
   echo ""
   echo "  Next steps:"
-  info "Open this folder in VS Code (requires VS Code >= 1.99 for MCP support)."
-  info "VS Code will prompt to start MCP servers — click Allow."
-  info "In Copilot Chat, MCP tools are available: list_skills, read_skill, read_flow, run_tests."
+  info "Open this folder in VS Code with GitHub Copilot installed."
+  info "VS Code -> GitHub Copilot -> confirm 'Use instruction files' is enabled."
+  info "Copilot Chat follows .github/copilot-instructions.md automatically."
   info "Ask: 'Run the harness for checkout using inputs/manual-flows/checkout.md'"
 }
 

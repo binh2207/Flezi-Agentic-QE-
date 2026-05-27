@@ -3,39 +3,22 @@
 You are an AI assistant for an application-agnostic Playwright automation harness.
 QA engineers supply manual flows under `inputs/`; you generate POM automation under `playwright-automation-framework/`.
 
-## MCP tools available
-
-This project exposes an `aiqe-harness` MCP server. Use these tools before each phase:
-
-| Tool | When to call |
-|------|-------------|
-| `list_skills` | Start of session — discover available skills |
-| `read_skill(name)` | Before each phase — load full workflow instructions |
-| `read_flow(feature)` | Before live-execution — load the manual flow |
-| `list_screen_maps` | Before automation-framework — check captured maps |
-| `read_screen_map(feature)` | Before generating code — load DOM map |
-| `run_tests(feature?)` | After generating code — verify pass/fail |
-
-The `playwright` MCP server is also available for real browser automation (navigate, click, snapshot).
-
 ## How to start
 
-When asked to automate a feature, always follow this order:
+When asked to automate a feature or run the harness, always follow this order:
 
-1. Call `read_skill("pipeline-orchestrator")` — load the full pipeline workflow.
-2. Call `read_flow("<feature>")` — load the manual flow file.
-3. **live-execution** — call `read_skill("live-execution")`, then use the `playwright` MCP tools to open a real browser, capture screen maps at each new route/modal BEFORE clicking. Write results to `playwright-automation-framework/support/screen-maps/<feature>.screen.json`.
-4. **automation-framework** — call `read_skill("automation-framework")`, then call `read_screen_map("<feature>")` and generate `pages/<feature>.page.ts`, `flows/<feature>.flow.ts`, `tests/e2e/<feature>.spec.ts`. Every selector MUST come from `getSelector(map, intent)` — never inline CSS, never guess.
-5. Call `run_tests("<feature>")` — verify. If tests fail, call `read_skill("test-healer")` and self-heal.
+1. **live-execution** — open a real browser via MCP Playwright, capture screen maps (DOM snapshots) at each new route/modal BEFORE clicking. Write results to `playwright-automation-framework/support/screen-maps/<feature>.screen.json`.
+2. **automation-framework** — read the screen map and generate `pages/<feature>.page.ts`, `flows/<feature>.flow.ts`, `tests/e2e/<feature>.spec.ts`. Every selector MUST come from `getSelector(map, intent)` — never inline CSS, never guess.
+3. **test-healer** — if a Playwright test fails, classify the error, apply ONE fix (update selector from screen map, add `waitFor`, narrow locator scope), re-run. Max 3 attempts. If still failing, report as blocker.
 
-Skill files (readable via `read_skill` tool):
-- `pipeline-orchestrator` — full pipeline (start here)
-- `live-execution` — screen map capture
-- `automation-framework` — POM generation
-- `test-healer` — self-healing
-- `test-case-design` — design test cases first
-- `test-jira-reporter` — post results to JIRA
-- `knowledge-base` — query business requirements (not selectors)
+Read the full workflow in the skill files before executing each phase:
+- `skills/pipeline-orchestrator/SKILL.md` — full pipeline (start here)
+- `skills/live-execution/SKILL.md` — screen map capture
+- `skills/automation-framework/SKILL.md` — POM generation
+- `skills/test-healer/SKILL.md` — self-healing
+- `skills/test-case-design/SKILL.md` — design test cases first
+- `skills/test-jira-reporter/SKILL.md` — post results to JIRA
+- `skills/knowledge-base/SKILL.md` — query business requirements (not selectors)
 
 ## Unbreakable rules
 

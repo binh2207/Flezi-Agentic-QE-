@@ -49,10 +49,10 @@ function New-Symlink([string]$link, [string]$target) {
   }
 }
 
-# -- Core: Playwright + MCP + Harness SDK (shared) ----------------------------
+# -- Core: Playwright + MCP (shared) ------------------------------------------
 function Setup-Core {
   Write-Host ""
-  Write-Host "-- [1/3] Installing Playwright dependencies..."
+  Write-Host "-- [1/2] Installing Playwright dependencies..."
   Push-Location "$root\playwright-automation-framework"
   npm install
   npx playwright install chromium
@@ -65,7 +65,7 @@ function Setup-Core {
   Pop-Location
 
   Write-Host ""
-  Write-Host "-- [2/3] Configuring MCP (playwright server)..."
+  Write-Host "-- [2/2] Configuring MCP (playwright server)..."
   $example = "$root\.mcp.json.example"
   $mcpTarget = "$root\.mcp.json"
 
@@ -98,13 +98,6 @@ if "playwright" not in servers:
 else:
     print("  [OK] .mcp.json already includes playwright MCP")
 '@
-
-  Write-Host ""
-  Write-Host "-- [3/3] Installing Harness MCP server dependencies..."
-  Push-Location $root
-  npm install --silent
-  Pop-Location
-  Ok "Harness MCP server dependencies installed."
 }
 
 # -- Claude Code --------------------------------------------------------------
@@ -196,19 +189,11 @@ print("  [OK] Updated .vscode/settings.json.")
     }
   }
 
-  # .vscode/mcp.json provides aiqe-harness + playwright MCP for VS Code Copilot
-  $vscodeMcp = "$root\.vscode\mcp.json"
-  if (Test-Path $vscodeMcp) {
-    Ok ".vscode\mcp.json already present (Harness MCP + Playwright MCP configured)."
-  } else {
-    Ok ".vscode\mcp.json present."
-  }
-
   Write-Host ""
   Write-Host "  Next steps:"
-  Info "Open this folder in VS Code (requires VS Code >= 1.99 for MCP support)."
-  Info "VS Code will prompt to start MCP servers -- click Allow."
-  Info "In Copilot Chat, MCP tools are available: list_skills, read_skill, read_flow, run_tests."
+  Info "Open this folder in VS Code with GitHub Copilot installed."
+  Info "VS Code -> GitHub Copilot -> confirm 'Use instruction files' is enabled."
+  Info "Copilot Chat follows .github/copilot-instructions.md automatically."
   Info "Ask: 'Run the harness for checkout using inputs/manual-flows/checkout.md'"
 }
 
