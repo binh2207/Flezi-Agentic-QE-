@@ -532,6 +532,104 @@ npm run kb:serve                 # khởi động RAG API (http://127.0.0.1:8765
 
 ---
 
+## Mở rộng cho dự án cụ thể (Project Extension)
+
+Framework là application-agnostic — phần core không bao giờ bị sửa. Khi project có component đặc thù, auth riêng, hoặc convention selector khác, dùng **project extension layer** để mở rộng mà không ảnh hưởng core.
+
+### Kiến trúc extension
+
+```
+playwright-automation-framework/
+  pages/
+    base.page.ts                      <- CORE: khong sua
+    <project>-base.page.ts            <- PROJECT: copy tu template, extend base
+    <feature>.page.ts                 <- GENERATED: extend project-base
+  support/
+    helpers.ts                        <- CORE: khong sua
+    capture-script.js                 <- CORE: khong sua
+    components/
+      README.md
+      example-component.template.ts   <- Template de tao component helper moi
+      <component>.ts                  <- PROJECT: helper cho tung component
+
+inputs/project-config/
+  custom-components.template.md       <- Template mo ta component
+  custom-components.md                <- PROJECT: copy tu template, dien vao
+  auth-flow.template.md               <- Template mo ta auth
+  auth-flow.md                        <- PROJECT: copy tu template, dien vao
+
+skills/
+  project-extension/SKILL.md          <- Skill doc cho AI biet dung component helper
+```
+
+### Quy tắc sở hữu
+
+| File | Ai tạo | Có được sửa |
+|---|---|---|
+| `base.page.ts`, `helpers.ts`, `capture-script.js` | Framework | Không bao giờ |
+| `<project>-base.page.ts` | Dev (copy từ template) | Dev khi thêm component |
+| `support/components/<component>.ts` | AI hoặc dev | Tự do |
+| `inputs/project-config/custom-components.md` | QA / dev | Khi component thay đổi |
+| `inputs/project-config/auth-flow.md` | QA / dev | Khi auth thay đổi |
+| `pages/<feature>.page.ts`, `tests/e2e/` | AI generated | Overwrite mỗi run |
+
+### Setup một lần cho project mới
+
+**Bước 1 — Tạo project config:**
+
+```bash
+cp inputs/project-config/custom-components.template.md inputs/project-config/custom-components.md
+cp inputs/project-config/auth-flow.template.md inputs/project-config/auth-flow.md
+```
+
+Điền vào từng component đặc thù của project (date picker, rich editor, file upload...) và auth strategy.
+
+**Bước 2 — Tạo project base page:**
+
+```bash
+cp playwright-automation-framework/pages/project-base.page.template.ts \
+   playwright-automation-framework/pages/<project>-base.page.ts
+```
+
+Thêm helper method cho từng component đã document ở Bước 1.
+
+**Bước 3 — Chạy pipeline với project-extension skill:**
+
+```
+Run pipeline-orchestrator for feature "checkout".
+Also apply: skills/project-extension/SKILL.md
+Project config: inputs/project-config/
+Flow: inputs/manual-flows/checkout.md
+```
+
+AI tự đọc `custom-components.md` và `auth-flow.md`, dùng đúng helper khi generate page objects.
+
+### Component helper — ví dụ
+
+```typescript
+// support/components/date-picker.ts
+export async function selectDate(page: Page, selector: string, dateStr: string) {
+  await page.locator(selector).click();
+  await page.locator('[class*="calendar"]').waitFor({ state: 'visible' });
+  await page.locator(selector).fill(dateStr);
+  await page.keyboard.press('Escape');
+}
+
+// pages/checkout.page.ts (AI generated — dùng helper thay vì raw Playwright)
+import { selectDate } from '../support/components/date-picker';
+export class CheckoutPage extends AcmeBasePage {
+  async fillDeliveryDate(date: string) {
+    await selectDate(this.page, getSelector(this.map, CheckoutIntents.deliveryDate), date);
+  }
+}
+```
+
+### Auth flow — session reuse
+
+Để tránh login lại trước mỗi test, khai báo `storageState` trong `playwright.config.ts` sau khi setup auth xong. Chi tiết: `inputs/project-config/auth-flow.template.md`.
+
+---
+
 ## Token optimization
 
 Harness được tối ưu để giảm lượng token tiêu thụ trong mỗi session AI — giúp chạy nhanh hơn, rẻ hơn, và ít bị cắt context hơn trên các trang phức tạp.
