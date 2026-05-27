@@ -3,6 +3,9 @@
   "version": "2.0.0",
   "private": true,
   "description": "Application-agnostic AI harness engineering core for Playwright automation",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
   "scripts": {
     "test": "npm run test --prefix playwright-automation-framework",
     "test:headed": "npm run test:headed --prefix playwright-automation-framework",
@@ -26,6 +29,7 @@
     "setup:cursor:win": "powershell -ExecutionPolicy Bypass -File scripts/setup-assistant.ps1 cursor",
     "setup:copilot:win": "powershell -ExecutionPolicy Bypass -File scripts/setup-assistant.ps1 copilot",
     "setup:assistants:win": "powershell -ExecutionPolicy Bypass -File scripts/setup-assistant.ps1 all",
+    "harness-mcp": "node scripts/harness-mcp-server.js",
     "typecheck": "npm run typecheck --prefix playwright-automation-framework"
   }
 }

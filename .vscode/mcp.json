@@ -1,0 +1,13 @@
+{
+  "inputs": [],
+  "servers": {
+    "aiqe-harness": {
+      "command": "node",
+      "args": ["${workspaceFolder}/scripts/harness-mcp-server.js"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }
+  }
+}

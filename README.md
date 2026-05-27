@@ -173,17 +173,105 @@ npm run setup:assistants:win
 |-----------|--------------|
 | **Claude Code** | Link `skills/` → `.claude/skills/` + `~/.claude/skills/harness-*` |
 | **Cursor** | Link `skills/` → `.cursor/skills/` + `~/.cursor/skills/harness-*` + cấu hình MCP |
-| **GitHub Copilot** | Xác nhận `.github/copilot-instructions.md` + tạo `.vscode/settings.json` bật `useInstructionFiles` |
+| **GitHub Copilot** | Xác nhận `.github/copilot-instructions.md` + tạo `.vscode/settings.json` + `.vscode/mcp.json` (Harness MCP + Playwright MCP) |
 
-Tất cả lệnh đều chạy **Playwright install + MCP setup** trước, rồi mới setup riêng cho assistant.
+Tất cả lệnh đều chạy **Playwright install + MCP setup + `npm install` (Harness MCP SDK)** trước, rồi mới setup riêng cho assistant.
+
+### Harness MCP Server (cho GitHub Copilot)
+
+Từ VS Code ≥ 1.99, Copilot Chat có thể gọi MCP tools trực tiếp. Project đã cấu hình sẵn qua `.vscode/mcp.json`:
+
+| Tool | Tác dụng |
+|------|---------|
+| `list_skills` | Liệt kê tất cả skills có sẵn |
+| `read_skill(name)` | Đọc SKILL.md để load workflow trước mỗi phase |
+| `read_flow(feature)` | Đọc manual flow từ `inputs/manual-flows/` |
+| `list_screen_maps` | Liệt kê screen maps đã capture |
+| `read_screen_map(feature)` | Đọc DOM map trước khi generate code |
+| `run_tests(feature?)` | Chạy Playwright tests và trả về kết quả |
+
+Khi mở project trong VS Code, sẽ có prompt **"Allow MCP servers?"** — click **Allow** để kích hoạt.
 
 ### Kiểm tra sau khi đăng ký
 
 - [ ] Claude Code: hỏi *"What harness skills are available?"* → phải liệt kê `pipeline-orchestrator`
 - [ ] Cursor: `npm run verify:mcp` pass; restart Cursor để MCP playwright active
-- [ ] Copilot: mở Copilot Chat trong VS Code → hỏi *"What is step 1 of pipeline-orchestrator?"*
+- [ ] Copilot: mở Copilot Chat → VS Code prompt Allow MCP → hỏi *"List available harness skills"* → Copilot gọi `list_skills` tool và trả về danh sách
 
 Hướng dẫn chi tiết: [docs/register-your-assistant.md](docs/register-your-assistant.md)
+
+---
+
+## Harness MCP Server — cơ chế hoạt động
+
+### Kiến trúc
+
+```
+VS Code (MCP host)
+  │
+  ├──► aiqe-harness MCP Server          (local process, Node.js)
+  │       │  list_skills                 → đọc skills/*/SKILL.md
+  │       │  read_skill(name)            → đọc skills/<name>/SKILL.md
+  │       │  read_flow(feature)          → đọc inputs/manual-flows/<feature>.md
+  │       │  list_screen_maps            → liệt kê support/screen-maps/
+  │       │  read_screen_map(feature)    → đọc support/screen-maps/<feature>.screen.json
+  │       └  run_tests(feature?)         → chạy npx playwright test, trả về output
+  │
+  └──► playwright MCP Server            (local process, @playwright/mcp)
+          │  browser_navigate            → mở URL trong Chromium thật
+          │  browser_snapshot           → chụp DOM snapshot
+          └  browser_click / browser_fill / ...
+```
+
+Cả hai server đều chạy **locally** — không cần internet, không cần external hosting. VS Code spawn chúng lên khi session bắt đầu.
+
+### Ai dùng MCP này
+
+| Assistant | Config | Cách kích hoạt |
+|-----------|--------|----------------|
+| **GitHub Copilot** | `.vscode/mcp.json` | VS Code ≥ 1.99, click Allow khi được hỏi |
+| **Claude Code** | `.mcp.json` | Tự động khi mở project |
+| **Cursor** | `.mcp.json` | Restart Cursor sau setup |
+
+### Luồng khi Copilot nhận lệnh
+
+```
+User: "Automate checkout feature"
+         │
+         ▼
+Copilot gọi: read_skill("pipeline-orchestrator")
+         │   → nhận toàn bộ nội dung SKILL.md
+         ▼
+Copilot gọi: read_flow("checkout")
+         │   → nhận manual flow từ inputs/manual-flows/checkout.md
+         ▼
+Copilot gọi: playwright.browser_navigate(BASE_URL)
+         │   → mở browser thật
+         ▼
+Copilot gọi: playwright.browser_snapshot()
+         │   → capture DOM
+         ▼
+Copilot gọi: read_screen_map("checkout")
+         │   → load map đã capture để generate code
+         ▼
+Copilot gọi: run_tests("checkout")
+             → chạy spec, trả về pass/fail
+```
+
+### So sánh trước và sau khi có MCP
+
+| | Trước (chỉ copilot-instructions.md) | Sau (có Harness MCP) |
+|---|---|---|
+| Đọc SKILL.md | Phụ thuộc Copilot tự đoán có cần đọc không | Tool call `read_skill` — chắc chắn đọc đúng file |
+| Dùng screen map | User phải đính kèm file thủ công | Tool call `read_screen_map` — load tự động |
+| Chạy test | Copilot không biết kết quả | Tool call `run_tests` — trả về stdout thật |
+| Mở browser | Không thể | `playwright` MCP server xử lý |
+
+### Yêu cầu
+
+- **VS Code ≥ 1.99** — phiên bản đầu tiên hỗ trợ MCP cho Copilot Chat
+- **GitHub Copilot** extension đã cài trong VS Code
+- Đã chạy `npm run setup:copilot:win` (hoặc `npm run setup:copilot`) ít nhất một lần
 
 ---
 

@@ -1,5 +1,11 @@
 {
   "mcpServers": {
+    "aiqe-harness": {
+      "command": "node",
+      "args": ["scripts/harness-mcp-server.js"],
+      "alwaysAllow": true,
+      "autoStart": true
+    },
     "playwright": {
       "command": "npx",
       "args": ["-y", "@playwright/mcp@latest"],
