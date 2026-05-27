@@ -116,78 +116,13 @@ Each test case must include these fields:
 
 ## Generating Markdown Output
 
-After designing test cases, write the Markdown file with `scripts/test_case_writer.py`.
+Use `scripts/test_case_writer.py` — `write_test_cases_markdown(feature, cases)` handles all formatting and writes to `inputs/test-cases/test_cases_<slug>.md`.
 
-Each case is a dict with keys: `tc_id`, `module`, `title`, `preconditions`, `steps` (list of strings), `test_data`, `expected_result`, `priority`, `technique`, `case_type`.
-
-```python
-from scripts.test_case_writer import write_test_cases_markdown
-
-path = write_test_cases_markdown(
-    "Login Form",
-    [
-        {
-            "tc_id": "TC_LOGIN_001",
-            "module": "Authentication",
-            "title": "Valid email and password login",
-            "preconditions": "User account exists and is active",
-            "steps": ["Open login page", "Enter valid credentials", "Click Sign in"],
-            "test_data": "email: user@example.com, password: ValidPass1!",
-            "expected_result": "User is redirected to the dashboard",
-            "priority": "High",
-            "technique": "EP",
-            "case_type": "Positive",
-        },
-    ],
-)
-```
-
-Or from a JSON file:
+Each case dict keys: `tc_id`, `module`, `title`, `preconditions`, `steps` (list), `test_data`, `expected_result`, `priority`, `technique`, `case_type`.
 
 ```bash
 python3 scripts/test_case_writer.py --feature "Login Form" --cases /path/to/cases.json
 ```
-
-- Default output directory: `inputs/test-cases/`
-- Output file naming: `test_cases_<feature_slug>.md`
-
-### Markdown Format
-
-Use this structure for the output file:
-
-```markdown
-# Test Cases: <Feature Name>
-
-## Summary
-- **Total:** N test cases
-- **High:** X | **Medium:** Y | **Low:** Z
-
----
-
-## TC_001 — <Title>
-
-| Field | Value |
-|-------|-------|
-| **Module** | <module> |
-| **Priority** | High / Medium / Low |
-| **Technique** | BVA / EP / Decision Table / State Transition / Exploratory |
-| **Type** | Positive / Negative / Edge Case |
-
-**Preconditions:** <preconditions>
-
-**Steps:**
-1. Step one
-2. Step two
-3. Step three
-
-**Test Data:** <test data>
-
-**Expected Result:** <expected result>
-
----
-```
-
-Repeat the block above for each test case, incrementing the TC ID.
 
 ## Coverage Guidelines
 

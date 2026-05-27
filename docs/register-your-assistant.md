@@ -24,13 +24,13 @@ Skills live in one place: [`skills/`](../skills/). Cursor and Claude Code use sy
 ### What you get
 
 - Project skills auto-discovered from `.cursor/skills/` (linked to `skills/`).
-- Agent can run the full harness when you mention **harness-engineering** or paste a flow path.
+- Agent can run the full harness when you mention **pipeline-orchestrator** or paste a flow path.
 
 ### Register (project — recommended for QA)
 
 1. Open the repo folder in **Cursor**.
 2. Confirm skills exist: **Cursor Settings → Rules / Skills** (or ask the agent: “List available project skills”).
-3. You should see skills such as `harness-engineering`, `live-execution`, `automation-framework`.
+3. You should see skills such as `pipeline-orchestrator`, `live-execution`, `automation-framework`.
 4. No copy step needed if you cloned this repo — symlinks are already configured.
 
 ### Register (personal — all your projects)
@@ -52,7 +52,7 @@ Run from this repository root. Prefix `harness-` avoids name clashes.
 Example prompts:
 
 ```text
-Run harness-engineering for feature "checkout".
+Run pipeline-orchestrator for feature "checkout".
 Flow: inputs/manual-flows/checkout.md
 ```
 
@@ -103,7 +103,7 @@ Check Anthropic docs for the current user skills path on your machine.
 ### How to invoke (Claude Code)
 
 ```text
-Follow skills/harness-engineering/SKILL.md for feature checkout using inputs/manual-flows/checkout.md
+Follow skills/pipeline-orchestrator/SKILL.md for feature checkout using inputs/manual-flows/checkout.md
 ```
 
 ---
@@ -127,12 +127,12 @@ Follow skills/harness-engineering/SKILL.md for feature checkout using inputs/man
 If your org uses Copilot on GitHub Issues/PRs:
 
 - Ensure this repo contains `.github/copilot-instructions.md` (already included).
-- In prompts, reference: `skills/harness-engineering/SKILL.md` and your flow file path.
+- In prompts, reference: `skills/pipeline-orchestrator/SKILL.md` and your flow file path.
 
 ### How to invoke (Copilot)
 
 ```text
-Follow .github/copilot-instructions.md and skills/harness-engineering/SKILL.md.
+Follow .github/copilot-instructions.md and skills/pipeline-orchestrator/SKILL.md.
 Run the harness for feature "checkout" using inputs/manual-flows/checkout.md.
 BASE_URL is in playwright-automation-framework/.env.
 ```
@@ -141,7 +141,7 @@ For long workflows, ask Copilot to read one skill at a time:
 
 1. `skills/live-execution/SKILL.md` — capture screen map  
 2. `skills/automation-framework/SKILL.md` — generate POM  
-3. `skills/playwright-self-healing/SKILL.md` — if tests fail  
+3. `skills/test-healer/SKILL.md` — if tests fail  
 
 ### Copilot limitations
 
@@ -161,7 +161,7 @@ If Copilot cannot drive MCP browser, QA runs **live-execution** in Cursor/Claude
 |------|--------|-------------|---------|
 | Open repo root | Yes | Yes | Yes |
 | Skills auto-loaded | `.cursor/skills` | `.claude/skills` | `copilot-instructions.md` |
-| Full pipeline prompt | `harness-engineering` | `skills/harness-engineering/SKILL.md` | Same + instructions file |
+| Full pipeline prompt | `pipeline-orchestrator` | `skills/pipeline-orchestrator/SKILL.md` | Same + instructions file |
 | Edit skills | `skills/` folder | `skills/` folder | `skills/` + instructions |
 
 ---
@@ -171,11 +171,11 @@ If Copilot cannot drive MCP browser, QA runs **live-execution** in Cursor/Claude
 Run this checklist after setup:
 
 - [ ] `npm test` passes (2 skipped placeholders)
-- [ ] Assistant lists or acknowledges `harness-engineering`
+- [ ] Assistant lists or acknowledges `pipeline-orchestrator`
 - [ ] `inputs/manual-flows/<your-feature>.md` exists
 - [ ] `playwright-automation-framework/.env` has `BASE_URL`
 - [ ] `npm run verify:mcp` passes; Cursor MCP shows **playwright** running
-- [ ] Test prompt: “What is step 1 of harness-engineering?” → should mention **live-execution** and screen maps
+- [ ] Test prompt: “What is step 1 of pipeline-orchestrator?” → should mention **live-execution** and screen maps
 
 ---
 

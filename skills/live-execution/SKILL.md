@@ -15,7 +15,8 @@ Evidence-first execution for harness engineering. **Screen maps are the contract
 | Artifact | Path |
 |----------|------|
 | Screen map | `playwright-automation-framework/support/screen-maps/<feature>.screen.json` |
-| Execution report | `playwright-automation-framework/reports/execution-<feature>.md` |
+| Execution report (markdown) | `playwright-automation-framework/reports/execution-<feature>.md` |
+| **Execution report (CSV)** | `playwright-automation-framework/reports/execution-<feature>.csv` |
 | Screenshots | `playwright-automation-framework/reports/screenshots/` |
 
 ## Workflow
@@ -39,86 +40,15 @@ Do not recapture if URL and visible structure are unchanged.
 
 ### MCP capture script
 
-Use `browser_evaluate` / `playwright_evaluate` with this script on the live page:
+Use `browser_evaluate` / `playwright_evaluate` with the script at:
 
-```javascript
-(() => {
-  const stability = (el) => {
-    if (el.dataset.testid || el.dataset.qa || el.dataset.cy) return 'data-attribute';
-    if (el.getAttribute('aria-label') || el.getAttribute('role')) return 'aria';
-    if (el.id) return 'id';
-    return 'css';
-  };
-
-  const bestSelector = (el) => {
-    if (el.dataset.testid) return `[data-testid="${el.dataset.testid}"]`;
-    if (el.dataset.qa) return `[data-qa="${el.dataset.qa}"]`;
-    if (el.dataset.cy) return `[data-cy="${el.dataset.cy}"]`;
-    if (el.id) return `#${el.id}`;
-    const name = el.getAttribute('name');
-    if (name) return `${el.tagName.toLowerCase()}[name="${name}"]`;
-    const aria = el.getAttribute('aria-label');
-    if (aria) return `[aria-label="${aria}"]`;
-    return null;
-  };
-
-  const labelFor = (el) => {
-    if (el.id) {
-      const lbl = document.querySelector(`label[for="${el.id}"]`);
-      if (lbl) return lbl.textContent.trim();
-    }
-    const parent = el.closest('label');
-    if (parent) return parent.textContent.trim();
-    return el.getAttribute('aria-label') || el.getAttribute('placeholder') || null;
-  };
-
-  const seen = new Set();
-  const elements = [];
-
-  document
-    .querySelectorAll(
-      'input, button, select, textarea, a[href], [data-testid], [data-qa], [role="button"], [role="link"]',
-    )
-    .forEach((el) => {
-      const sel = bestSelector(el);
-      if (!sel || seen.has(sel)) return;
-      seen.add(sel);
-      const raw = (el.dataset.testid || el.getAttribute('name') || el.id || el.textContent || '')
-        .trim()
-        .slice(0, 40)
-        .replace(/\s+/g, '_')
-        .toLowerCase();
-      elements.push({
-        intent: raw || 'unknown',
-        selector: sel,
-        tag: el.tagName.toLowerCase(),
-        type: el.getAttribute('type') || el.tagName.toLowerCase(),
-        label: labelFor(el),
-        text: el.textContent?.trim().slice(0, 80) || null,
-        placeholder: el.getAttribute('placeholder') || null,
-        visible: el.offsetParent !== null,
-        stability: stability(el),
-      });
-    });
-
-  return JSON.stringify(
-    {
-      page: document.title || '',
-      url: window.location.href,
-      route: window.location.pathname,
-      build_id:
-        document.querySelector('meta[name="app-build-id"]')?.getAttribute('content') || null,
-      captured_at: new Date().toISOString(),
-      element_count: elements.length,
-      elements,
-    },
-    null,
-    2,
-  );
-})()
+```
+playwright-automation-framework/support/capture-script.js
 ```
 
-Persist the JSON to `playwright-automation-framework/support/screen-maps/<feature>.screen.json`.
+Read the file content, then pass it verbatim as the expression argument to the MCP tool.
+
+Persist the returned JSON to `playwright-automation-framework/support/screen-maps/<feature>.screen.json`.
 
 **Before handoff:** review and rename `intent` values to stable snake_case (e.g. `cookie_accept`, `search_button`). Add `dom_fingerprint` and `freshness` per [TEMPLATES.md](../../playwright-automation-framework/TEMPLATES.md).
 
@@ -141,3 +71,52 @@ Read each tool schema before calling. Details: [docs/mcp-setup.md](../../docs/mc
 
 - Do not hand off to **automation-framework** without a screen map for the primary route
 - Tag `RISK: stale_map_soft` if continuing on STALE_SOFT
+
+---
+
+## Post-condition: CSV execution report
+
+After all steps are executed, write a CSV report using `scripts/execution_report_writer.py`.
+
+### CSV format
+
+File: `playwright-automation-framework/reports/execution-<feature>.csv`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `step` | int | Step number (1-based, matches flow table) |
+| `action` | string | Action taken (e.g. `Click`, `Fill`, `Navigate`) |
+| `target` | string | Element intent or route (e.g. `submit_button`, `/checkout`) |
+| `expected_signal` | string | Expected outcome copied from the flow definition |
+| `actual_result` | string | What actually happened (observed URL, text, or error) |
+| `status` | enum | `PASS` \| `FAIL` \| `SKIP` \| `ERROR` |
+| `url` | string | Page URL at the time the step was evaluated |
+| `screenshot` | string | Repo-relative path to screenshot, or empty string |
+| `timestamp` | ISO 8601 | UTC timestamp of step completion |
+
+### Step status rules
+
+| Status | When to use |
+|--------|-------------|
+| `PASS` | Expected signal observed exactly |
+| `FAIL` | Step executed but expected signal not observed |
+| `SKIP` | Step not executed (conditional branch or blocked by prior FAIL) |
+| `ERROR` | Unexpected exception, timeout, or MCP tool failure |
+
+### How to generate
+
+Use `scripts/execution_report_writer.py` — `ExecutionReportWriter` class:
+
+```bash
+python scripts/execution_report_writer.py --feature <slug> --steps <steps.json>
+```
+
+### Agent checklist (post-execution)
+
+After the final step:
+
+1. Assemble `steps` list — one entry per flow step, in order
+2. Set `screenshot` to the repo-relative path for every `FAIL` or `ERROR` step
+3. Call `ExecutionReportWriter().write(feature, steps)`
+4. Log the returned path and the summary counts
+5. If any step is `FAIL` or `ERROR`, tag `RISK: execution_failures` in the generation manifest

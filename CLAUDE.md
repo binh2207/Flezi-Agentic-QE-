@@ -8,8 +8,8 @@ Application-agnostic **AI harness for Playwright**. Consumer apps supply flows u
 
 ## Primary skill
 
-### Harness Engineering (full pipeline)
-- [skills/harness-engineering/SKILL.md](skills/harness-engineering/SKILL.md)
+### Pipeline Orchestrator (full pipeline)
+- [skills/pipeline-orchestrator/SKILL.md](skills/pipeline-orchestrator/SKILL.md)
 - Use when: building automation from a URL/flow, running the full harness, or "harness engineering" / "Playwright automation with AI"
 
 ## Harness phases
@@ -20,8 +20,8 @@ Application-agnostic **AI harness for Playwright**. Consumer apps supply flows u
 ### Automation framework (POM generation)
 - [skills/automation-framework/SKILL.md](skills/automation-framework/SKILL.md)
 
-### Playwright self-healing
-- [skills/playwright-self-healing/SKILL.md](skills/playwright-self-healing/SKILL.md)
+### Test healer (self-healing)
+- [skills/test-healer/SKILL.md](skills/test-healer/SKILL.md)
 
 ## Optional
 
@@ -31,9 +31,9 @@ Application-agnostic **AI harness for Playwright**. Consumer apps supply flows u
 ### JIRA test reporter
 - [skills/test-jira-reporter/SKILL.md](skills/test-jira-reporter/SKILL.md)
 
-### RAG / knowledge base (optional)
+### Knowledge base / RAG (optional)
 - [docs/kb-guidelines.md](docs/kb-guidelines.md)
-- [skills/rag/SKILL.md](skills/rag/SKILL.md) — not for UI selectors
+- [skills/knowledge-base/SKILL.md](skills/knowledge-base/SKILL.md) — not for UI selectors
 
 ## Framework root
 

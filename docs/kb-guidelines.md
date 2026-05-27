@@ -88,7 +88,7 @@ KB and harness are **parallel inputs** to quality; only the harness path produce
 
 ## Agent skill
 
-Follow [skills/rag/SKILL.md](../skills/rag/SKILL.md) when the RAG skill is active (strict KB-only answers).
+Follow [skills/knowledge-base/SKILL.md](../skills/knowledge-base/SKILL.md) when the RAG skill is active (strict KB-only answers).
 
 ## Troubleshooting
 

@@ -26,7 +26,7 @@ See root `.gitignore` for the full list.
    cp inputs/manual-flows/example-flow.template.md inputs/manual-flows/my-feature.md
    ```
 4. Set `BASE_URL` in `playwright-automation-framework/.env`.
-5. In Cursor, run the **harness-engineering** skill with feature slug `my-feature`.
+5. In Cursor, run the **pipeline-orchestrator** skill with feature slug `my-feature`.
 6. Commit only what your team policy allows (often generated specs; rarely screen maps if they contain sensitive selectors).
 
 ## Option B — Copy into an existing monorepo
@@ -94,7 +94,7 @@ Add your generated e2e specs to the repo (or generate in CI with secrets for `BA
 - [ ] **automation-framework** → pages, flows, `tests/e2e/<feature>.spec.ts`
 - [ ] `npx playwright test tests/e2e/<feature>.spec.ts`
 - [ ] Remove `harness-placeholder` specs when real tests exist
-- [ ] **playwright-self-healing** if failures are timing/selectors only
+- [ ] **test-healer** if failures are timing/selectors only
 
 ## Troubleshooting
 

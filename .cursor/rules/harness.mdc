@@ -1,0 +1,70 @@
+---
+description: AIQE Playwright Harness — rules for all automation work in this project
+alwaysApply: true
+---
+
+# AIQE Playwright Harness
+
+Application-agnostic AI harness for Playwright automation.
+QA supplies flows under `inputs/`; generated code lives under `playwright-automation-framework/`.
+
+## Workflow (always follow this order)
+
+### Phase 1 — live-execution (mandatory before any code generation)
+- Open a real browser via MCP Playwright (`@playwright/mcp`)
+- At each new route or modal: capture screen map (DOM snapshot) BEFORE clicking
+- Output: `playwright-automation-framework/support/screen-maps/<feature>.screen.json`
+- Read full instructions: `skills/live-execution/SKILL.md`
+
+### Phase 2 — automation-framework (POM generation)
+- Read the screen map from Phase 1
+- Generate: `pages/<feature>.page.ts`, `flows/<feature>.flow.ts`, `tests/e2e/<feature>.spec.ts`
+- Every selector MUST use `getSelector(map, intent)` — no inline CSS, no guessing
+- Read full instructions: `skills/automation-framework/SKILL.md`
+
+### Phase 3 — test-healer (if tests fail)
+- Classify error: timeout / selector not found / navigation / env
+- Apply ONE fix per attempt: update selector from screen map, add `waitFor`, narrow scope
+- Max 3 attempts — if still failing, report blocker and request screen map recapture
+- Read full instructions: `skills/test-healer/SKILL.md`
+
+## Entry point
+
+For any request about automation, harness engineering, or Playwright:
+**Start with `skills/pipeline-orchestrator/SKILL.md`**
+
+## Skill index
+
+| Skill file | When to use |
+|---|---|
+| `skills/pipeline-orchestrator/SKILL.md` | Full pipeline — start here |
+| `skills/live-execution/SKILL.md` | Capture screen maps / recapture UI |
+| `skills/automation-framework/SKILL.md` | Regenerate POM after screen map update |
+| `skills/test-healer/SKILL.md` | Fix failing Playwright tests |
+| `skills/test-case-design/SKILL.md` | Design test cases before automation |
+| `skills/test-jira-reporter/SKILL.md` | Post results to JIRA |
+| `skills/knowledge-base/SKILL.md` | Query business requirements (not selectors) |
+
+## Unbreakable rules
+
+- Selectors come ONLY from screen maps — never from RAG, never hardcoded, never guessed.
+- Capture screen map BEFORE clicking on each new route or modal.
+- Never delete assertions to make a test green.
+- Never use `test.skip` to force green.
+- Never bypass CAPTCHA or real payment flows.
+- Gate: no code generation without a screen map for the target route.
+
+## Project layout
+
+```
+inputs/manual-flows/                        <- QA writes flows here
+inputs/test-cases/                          <- QA writes test cases here
+playwright-automation-framework/
+  pages/                                    <- generated Page Objects
+  flows/                                    <- generated journey functions
+  tests/e2e/                                <- generated specs
+  support/screen-maps/                      <- DOM snapshots (selector source of truth)
+  reports/                                  <- HTML + JSON reports
+  .env                                      <- set BASE_URL here
+skills/                                     <- workflow instructions per phase
+```

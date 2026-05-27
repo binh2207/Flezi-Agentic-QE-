@@ -14,13 +14,13 @@ Canonical skill definitions for the Playwright harness. **Same content** is used
 
 | Skill | Start here? | Purpose |
 |-------|-------------|---------|
-| [harness-engineering](harness-engineering/SKILL.md) | **Yes** | Full pipeline for one feature |
+| [pipeline-orchestrator](pipeline-orchestrator/SKILL.md) | **Yes** | Full pipeline for one feature |
 | [live-execution](live-execution/SKILL.md) | | MCP browser + screen maps |
 | [automation-framework](automation-framework/SKILL.md) | | POM from screen maps |
-| [playwright-self-healing](playwright-self-healing/SKILL.md) | | Fix failing tests |
+| [test-healer](test-healer/SKILL.md) | | Fix failing tests |
 | [test-jira-reporter](test-jira-reporter/SKILL.md) | | Jira report (optional) |
 | [test-case-design](test-case-design/SKILL.md) | | Manual TC markdown (optional) |
-| [rag](rag/SKILL.md) | | Requirements RAG only (optional) |
+| [knowledge-base](knowledge-base/SKILL.md) | | Requirements RAG only (optional) |
 
 ## Skill file format
 

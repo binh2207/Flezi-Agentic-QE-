@@ -19,6 +19,6 @@ This directory holds **your** flows and test cases. The framework under `playwri
 
 1. Copy `manual-flows/example-flow.template.md` → `manual-flows/<your-feature>.md`
 2. Set `BASE_URL` in `playwright-automation-framework/.env`
-3. Run **harness-engineering** with feature slug `<your-feature>`
+3. Run **pipeline-orchestrator** with feature slug `<your-feature>`
 
 Consumer-specific flows and generated automation are **gitignored** by default (see root `.gitignore`). Only `example-flow.template.md` ships with the core framework.

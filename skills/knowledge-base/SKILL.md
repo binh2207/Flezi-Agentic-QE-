@@ -1,5 +1,5 @@
 ---
-name: rag
+name: knowledge-base
 description: Optional RAG for requirements and test-design context (knowledge_base/). Not used for Playwright selectors — use live-execution screen maps for harness automation. Ingest and query ChromaDB via knowledge_base/vector/.
 ---
 
@@ -153,59 +153,13 @@ Higher score = more relevant (cosine similarity, 0–1).
 
 ## Step 4 — Use RAG Programmatically
 
-Import `query` directly in any Python skill or script:
+Use `scripts/rag_answer.py` — `RAGAnswer` class handles retrieval + Claude call:
 
-```python
-from knowledge_base.vector.query import query
-
-chunks = query("how to run API tests", n_results=3)
-
-# Build a context string for a Claude API call
-context = "\n\n".join(
-    f"[Source: {c['source']} | {c['header']}]\n{c['text']}"
-    for c in chunks
-)
-
-print(context)
+```bash
+python3 scripts/rag_answer.py "What test design techniques are supported?"
 ```
 
-Each chunk dict contains:
-
-| Key | Type | Description |
-|---|---|---|
-| `text` | str | The chunk content |
-| `source` | str | Absolute path to the source `.md` file |
-| `header` | str | Nearest markdown header above the chunk |
-| `score` | float | Cosine similarity score (higher = more relevant) |
-
-### Full RAG + Claude API example:
-
-```python
-import anthropic
-from knowledge_base.vector.query import query
-
-def rag_answer(question: str) -> str:
-    chunks = query(question, n_results=5)
-    context = "\n\n".join(
-        f"[{c['header'] or 'Intro'}]\n{c['text']}" for c in chunks
-    )
-
-    client = anthropic.Anthropic()
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=1024,
-        system="You are a QA assistant. Use the provided context to answer the question. If the context does not contain the answer, say so.",
-        messages=[
-            {
-                "role": "user",
-                "content": f"Context:\n{context}\n\nQuestion: {question}"
-            }
-        ]
-    )
-    return response.content[0].text
-
-print(rag_answer("What test design techniques are supported?"))
-```
+Chunk dict keys returned by `vector_query`: `text`, `source`, `header`, `score` (cosine similarity, higher = more relevant).
 
 ---
 

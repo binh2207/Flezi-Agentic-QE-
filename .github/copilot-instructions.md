@@ -1,44 +1,58 @@
-# GitHub Copilot — Playwright harness instructions
+# AIQE Playwright Harness — Copilot Instructions
 
-You are helping QA and engineers use the **AIQE Playwright Harness** in this repository.
+You are an AI assistant for an application-agnostic Playwright automation harness.
+QA engineers supply manual flows under `inputs/`; you generate POM automation under `playwright-automation-framework/`.
 
-## Read first
+## How to start
 
-- QA workflow: [README.md](../README.md#guidelines-for-qa)
-- Register Copilot: [docs/register-your-assistant.md](../docs/register-your-assistant.md#github-copilot)
-- Full agent routing: [AGENTS.md](../AGENTS.md)
+When asked to automate a feature or run the harness, always follow this order:
 
-## Default workflow
+1. **live-execution** — open a real browser via MCP Playwright, capture screen maps (DOM snapshots) at each new route/modal BEFORE clicking. Write results to `playwright-automation-framework/support/screen-maps/<feature>.screen.json`.
+2. **automation-framework** — read the screen map and generate `pages/<feature>.page.ts`, `flows/<feature>.flow.ts`, `tests/e2e/<feature>.spec.ts`. Every selector MUST come from `getSelector(map, intent)` — never inline CSS, never guess.
+3. **test-healer** — if a Playwright test fails, classify the error, apply ONE fix (update selector from screen map, add `waitFor`, narrow locator scope), re-run. Max 3 attempts. If still failing, report as blocker.
 
-When the user asks to automate a web flow or run the harness:
+Read the full workflow in the skill files before executing each phase:
+- `skills/pipeline-orchestrator/SKILL.md` — full pipeline (start here)
+- `skills/live-execution/SKILL.md` — screen map capture
+- `skills/automation-framework/SKILL.md` — POM generation
+- `skills/test-healer/SKILL.md` — self-healing
+- `skills/test-case-design/SKILL.md` — design test cases first
+- `skills/test-jira-reporter/SKILL.md` — post results to JIRA
+- `skills/knowledge-base/SKILL.md` — query business requirements (not selectors)
 
-1. Read [skills/harness-engineering/SKILL.md](../skills/harness-engineering/SKILL.md) and follow it.
-2. Use the user’s flow file under `inputs/manual-flows/<feature>.md`.
-3. Use `BASE_URL` from `playwright-automation-framework/.env`.
-4. Live browser capture needs MCP Playwright in Cursor (`npm run setup:mcp` — see `docs/mcp-setup.md`).
-5. Execute sub-skills in order:
-   - [skills/live-execution/SKILL.md](../skills/live-execution/SKILL.md) — screen maps **before** generation
-   - [skills/automation-framework/SKILL.md](../skills/automation-framework/SKILL.md) — POM only from screen maps
-   - Run `cd playwright-automation-framework && npx playwright test tests/e2e/<feature>.spec.ts`
-   - [skills/playwright-self-healing/SKILL.md](../skills/playwright-self-healing/SKILL.md) on failure (max 3 attempts)
+## Unbreakable rules
 
-## Rules
+- Selectors come ONLY from screen maps — never from RAG, never hardcoded, never guessed.
+- Capture screen map BEFORE clicking on each new route or modal.
+- Never delete assertions to make a test green.
+- Never use `test.skip` to force green.
+- Never bypass CAPTCHA or real payment flows.
+- Do not generate code if no screen map exists for the target route — run live-execution first.
 
-- Never invent CSS selectors; use `support/screen-maps/<feature>.screen.json`.
-- Never skip live capture when no screen map exists.
-- Do not remove assertions to make tests pass.
-- Optional Jira: [skills/test-jira-reporter/SKILL.md](../skills/test-jira-reporter/SKILL.md).
+## Project layout
 
-## Skill index
-
-See [skills/README.md](../skills/README.md).
-
-## Commands
-
-```bash
-npm run setup:playwright
-npm test
-npm run test:regression
+```
+inputs/manual-flows/       <- QA writes flows here
+inputs/test-cases/         <- QA writes test cases here
+playwright-automation-framework/
+  pages/                   <- generated Page Objects
+  flows/                   <- generated journey functions
+  tests/e2e/               <- generated specs
+  support/screen-maps/     <- captured DOM snapshots (source of truth for selectors)
+  reports/                 <- Playwright HTML + JSON reports
+skills/                    <- workflow instructions for each harness phase
 ```
 
-Templates: `playwright-automation-framework/TEMPLATES.md`
+## Key commands
+
+```bash
+# Run tests
+cd playwright-automation-framework
+npx playwright test tests/e2e/<feature>.spec.ts
+npx playwright show-report reports/html
+
+# TypeScript check
+npm run typecheck
+```
+
+Set `BASE_URL` in `playwright-automation-framework/.env` before running any tests.

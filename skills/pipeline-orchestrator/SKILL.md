@@ -1,8 +1,8 @@
 ---
-name: harness-engineering
+name: pipeline-orchestrator
 description: >-
   AI harness engineering for Playwright — live MCP execution captures screen maps,
-  automation-framework generates POM tests from evidence, self-healing repairs drift.
+  automation-framework generates POM tests from evidence, test-healer repairs drift.
   Use for end-to-end harness work, new feature automation, or fixing flaky/failing specs.
 ---
 
@@ -51,7 +51,7 @@ inputs (manual flow / test cases)
         │
         ▼ (on failure)
 ┌───────────────────────┐
-│ 4. playwright-self-healing │  minimal locator/wait fixes, re-run (≤3 attempts)
+│ 4. test-healer             │  minimal locator/wait fixes, re-run (≤3 attempts)
 └───────────────────────┘
         │
         ▼ (optional)
@@ -95,7 +95,7 @@ Record pass/fail counts in the generation manifest.
 
 ## Step 4 — Self-healing (if needed)
 
-**Read** `skills/playwright-self-healing/SKILL.md`.
+**Read** `skills/test-healer/SKILL.md`.
 
 - Max 3 patch attempts per failure cluster
 - Prefer screen map updates over heuristic CSS

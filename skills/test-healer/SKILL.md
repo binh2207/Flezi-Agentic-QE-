@@ -1,5 +1,5 @@
 ---
-name: playwright-self-healing
+name: test-healer
 description: >-
   Repairs failing Playwright tests in playwright-automation-framework/ using traces,
   error context, and screen maps. Minimal diffs to locators and waits only.

@@ -16,12 +16,12 @@ All workflow skills live in [`skills/`](skills/):
 
 | Priority | Skill | When |
 |----------|-------|------|
-| 1 | [harness-engineering](skills/harness-engineering/SKILL.md) | End-to-end feature automation |
+| 1 | [pipeline-orchestrator](skills/pipeline-orchestrator/SKILL.md) | End-to-end feature automation |
 | 2 | [live-execution](skills/live-execution/SKILL.md) | Browser evidence + screen maps |
 | 3 | [automation-framework](skills/automation-framework/SKILL.md) | Generate POM from screen maps |
-| 4 | [playwright-self-healing](skills/playwright-self-healing/SKILL.md) | Fix failing Playwright tests |
+| 4 | [test-healer](skills/test-healer/SKILL.md) | Fix failing Playwright tests |
 
-Optional: [test-case-design](skills/test-case-design/SKILL.md), [test-jira-reporter](skills/test-jira-reporter/SKILL.md), [rag](skills/rag/SKILL.md). KB guide: [docs/kb-guidelines.md](docs/kb-guidelines.md).
+Optional: [test-case-design](skills/test-case-design/SKILL.md), [test-jira-reporter](skills/test-jira-reporter/SKILL.md), [knowledge-base](skills/knowledge-base/SKILL.md). KB guide: [docs/kb-guidelines.md](docs/kb-guidelines.md).
 
 **Cursor / Claude Code:** `.cursor/skills` and `.claude/skills` symlink here.  
 **Copilot:** follow [.github/copilot-instructions.md](.github/copilot-instructions.md).
