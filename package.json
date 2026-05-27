@@ -20,6 +20,8 @@
     "setup:cursor": "bash scripts/setup-assistant.sh cursor",
     "setup:copilot": "bash scripts/setup-assistant.sh copilot",
     "setup:assistants": "bash scripts/setup-assistant.sh all",
+    "setup:playwright:win": "powershell -ExecutionPolicy Bypass -File scripts/setup-playwright.ps1",
+    "verify:mcp:win": "powershell -ExecutionPolicy Bypass -File scripts/verify-mcp-playwright.ps1",
     "setup:claudecode:win": "powershell -ExecutionPolicy Bypass -File scripts/setup-assistant.ps1 claudecode",
     "setup:cursor:win": "powershell -ExecutionPolicy Bypass -File scripts/setup-assistant.ps1 cursor",
     "setup:copilot:win": "powershell -ExecutionPolicy Bypass -File scripts/setup-assistant.ps1 copilot",

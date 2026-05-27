@@ -95,11 +95,28 @@ AIQE Agenting Harness Engineering/
 
 ## Cài đặt một lần
 
+> **Quan trọng:** Clone repo về máy trước, rồi `cd` vào thư mục đó — mọi lệnh `npm run ...` phải chạy **bên trong thư mục repo**, không phải thư mục khác.
+
 ```bash
-git clone <repo-này>
-cd <repo>
+# Bước 1 — Clone
+git clone <repo-url> aiqe-harness
+cd aiqe-harness
+
+# Bước 2 — Cài đặt (Git Bash / macOS / Linux)
 npm run setup:playwright   # cài deps, Chromium, đăng ký MCP Playwright
 npm run verify:mcp         # xác nhận @playwright/mcp hoạt động
+```
+
+**Windows PowerShell (native):**
+
+```powershell
+# Bước 1 — Clone
+git clone <repo-url> aiqe-harness
+cd aiqe-harness
+
+# Bước 2 — Cài đặt
+npm run setup:playwright:win   # cài deps, Chromium, đăng ký MCP Playwright
+npm run verify:mcp:win         # xác nhận @playwright/mcp hoạt động
 ```
 
 Sau đó set URL ứng dụng:
@@ -137,6 +154,9 @@ npm run setup:assistants
 ### Windows PowerShell (native)
 
 ```powershell
+npm run setup:playwright:win   # bắt buộc chạy trước (deps + MCP)
+npm run verify:mcp:win         # xác nhận MCP
+
 npm run setup:claudecode:win
 npm run setup:cursor:win
 npm run setup:copilot:win
@@ -485,6 +505,11 @@ npm run setup:playwright         # cài đặt tối thiểu (deps + MCP)
 npm run setup                    # harness + KB tuỳ chọn
 
 # ── Đăng ký assistant (chạy một lần) ─────────────────────────
+npm run setup:playwright         # deps + MCP (Git Bash)
+npm run setup:playwright:win     # deps + MCP (Windows PowerShell)
+npm run verify:mcp               # xác nhận MCP (Git Bash)
+npm run verify:mcp:win           # xác nhận MCP (Windows PowerShell)
+
 npm run setup:assistants         # Claude Code + Cursor + Copilot (Git Bash)
 npm run setup:claudecode         # chỉ Claude Code
 npm run setup:cursor             # chỉ Cursor
